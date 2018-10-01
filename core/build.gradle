@@ -1,0 +1,21 @@
+apply plugin: "java"
+apply plugin: 'com.google.gms.google-services' 
+
+repositories {
+    google()
+    mavenCentral()
+}
+
+dependencies {
+    runtime group: 'com.google.gms', name: 'google-services', version: '3.1.1'
+}
+
+sourceCompatibility = 1.6
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+
+
+eclipse.project {
+    name = appName + "-core"
+}
