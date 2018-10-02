@@ -16,6 +16,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import io.github.keebler17.spaceinvaders.screens.LoseScreen;
 import io.github.keebler17.spaceinvaders.screens.MainScreen;
+import io.github.keebler17.spaceinvaders.screens.WinScreen;
 import i:o.github.keebler17.spaceinvaders.screens.WinScreen;
 
 public class SpaceInvaders extends Game {
