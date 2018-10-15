@@ -11,13 +11,13 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.DatabaseReference.CompletionListener;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import io.github.keebler17.spaceinvaders.screens.LoseScreen;
 import io.github.keebler17.spaceinvaders.screens.MainScreen;
 import io.github.keebler17.spaceinvaders.screens.WinScreen;
-import i:o.github.keebler17.spaceinvaders.screens.WinScreen;
 
 public class SpaceInvaders extends Game {
 
@@ -30,12 +30,12 @@ public class SpaceInvaders extends Game {
 		Global.init();
 		Assets.load();
 		try {
-			FileInputStream serviceAccount = new FileInputStream("*******************************************************************************************.json");
+			FileInputStream serviceAccount = new FileInputStream("***********************");
 		
 			// Initialize the app with a service account, granting admin privileges
 			FirebaseOptions options = new FirebaseOptions.Builder()
 			    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-			    .setDatabaseUrl("*************************************************")
+			    .setDatabaseUrl("*********************")
 			    .build();
 			FirebaseApp.initializeApp(options);
 

@@ -40,5 +40,4 @@ public class PlayerBullet {
 		shape.rect(x, y, Global.BULLET_WIDTH, Global.BULLET_HEIGHT);
 		shape.end();
 	}
-
 }

@@ -17,6 +17,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.DatabaseReference.CompletionListener;
 import com.google.firebase.database.ValueEventListener;
 
 import io.github.keebler17.spaceinvaders.Assets;
@@ -50,6 +51,8 @@ public class MainScreen implements Screen {
 	int x;
 	int y;
 	int vel;
+	
+	int velocity = 0;
 
 	BitmapFont font;
 
@@ -60,40 +63,35 @@ public class MainScreen implements Screen {
 
 	boolean kill = false;
 
+	public int toInt(DataSnapshot s) {
+		return Integer.valueOf(s.getValue().toString()); // it returns as object, if i cast it then it is 0. strange.
+	}
+	
 	public MainScreen(SpaceInvaders game) {
 		this.game = game;
 
 		root.addValueEventListener(new ValueEventListener() {
 			@Override
 			public void onDataChange(DataSnapshot snap) {
+				receivedBullets.clear();
+				receivedPlayers.clear();
 				for (DataSnapshot s : snap.getChildren()) {
-
-					// still working on this part. im just too lazy to fix it. the monsterous code `Integer.valueOf(s2.getValue().toString());` seems to work.
-
-					/*if (s.getKey() != Global.keyStr) {
-						int px = s.child("x").getValue();
-						int py = (Integer) s.child("y").getValue();
-						int pl = (Integer) s.child("lives").getValue();
-
-						// receivedPlayers.add(new Player(px, py, 5, pl, Assets.player));
-						
-						for (DataSnapshot s2 : s.getChildren()) {
-							//int bx = (Integer) s2.child("x").getValue();
-							//int by = (Integer) s2.child("y").getValue();
-							//receivedBullets.add(new PlayerBullet(bx, by, 5));
-						}
-						System.out.println("test");
-						System.out.println(receivedPlayers);
-					}*/
-					
 					if(s.getKey().equals("aliens")) {
+						x = toInt(s.child("x"));
+						y = toInt(s.child("x"));	
+					} else if(s.getKey() != Global.keyStr) {
+						int px = toInt(s.child("x"));
+						int py = toInt(s.child("y"));
+						int pl = toInt(s.child("lives"));
+						receivedPlayers.add(new Player(px, py, velocity, pl, Assets.player));
+						
 						for(DataSnapshot s2 : s.getChildren()) {
-							if(s2.getKey().equals("x")) {
-								x = Integer.valueOf(s2.getValue().toString());
-							} else if(s2.getKey().equals("y")) {
-								y = (Integer) s2.getValue();
-							} else if(s2.getKey().equals("left")) {
-								left = (Boolean) s2.getValue();
+							if(!s2.getKey().equals("x") && !s2.getKey().equals("y") && !s2.getKey().equals("lives")) {
+								if(s2.child("x") != null) {
+									int bx = toInt(s2.child("x"));
+									//int by = toInt(s2.child("y"));
+									//receivedBullets.add(new PlayerBullet(bx, by, velocity));
+								}
 							}
 						}
 					}
@@ -102,7 +100,6 @@ public class MainScreen implements Screen {
 
 			@Override
 			public void onCancelled(DatabaseError error) {
-				System.out.print("Error");
 				System.out.println(error.getMessage());
 			}
 
@@ -169,8 +166,8 @@ public class MainScreen implements Screen {
 		font.draw(batch, "Score: " + Global.score, 0, 0);
 		font.draw(batch, "Time: " + timeSeconds, 300, 0);
 
-		for (Player p : receivedPlayers) {
-			p.draw(batch);
+		for (int i = 0; i < receivedPlayers.size(); i++) {
+			receivedPlayers.get(i).draw(batch);
 		}
 
 		batch.end();
@@ -184,14 +181,6 @@ public class MainScreen implements Screen {
 		batch.end();
 
 		push();
-
-		shape.setProjectionMatrix(camera.combined);
-
-		shape.begin(ShapeType.Filled);
-		for (PlayerBullet b : receivedBullets) {
-			b.draw(shape);
-		}
-		shape.end();
 	}
 
 	public void push() {
@@ -200,6 +189,7 @@ public class MainScreen implements Screen {
 		map.put("x", player.x);
 		map.put("y", player.y);
 		map.put("lives", player.lives);
+		map.put("dead", false);
 		int i = 0;
 		for (PlayerBullet b : Global.playerBullets) {
 			map.put("bullet" + i, b);
@@ -329,6 +319,8 @@ public class MainScreen implements Screen {
 
 		for (int i = 0; i < aliens.size(); i++) {
 			if (aliens.get(i).dead) {
+				root.child("status").child("alien" + i).setValueAsync(false);
+				root.child("status").child("alien" + i).push();
 				//aliens.remove(aliens.get(i));
 			}
 		}
@@ -339,6 +331,10 @@ public class MainScreen implements Screen {
 			bullet.draw(shape);
 		}
 
+		for(int i = 0; i < receivedBullets.size(); i++) {
+			receivedBullets.get(i).draw(shape);
+		}
+		
 		for (AlienBullet bullet : Global.alienBullets) {
 			bullet.draw(shape);
 		}
@@ -396,7 +392,16 @@ public class MainScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		ref.removeValueAsync();
+		ref.removeValue(new CompletionListener() {
+
+			@Override
+			public void onComplete(DatabaseError error, DatabaseReference ref) {
+				if(error != null) {
+					System.out.println(error.toString());
+				} else ref.push();
+			}
+			
+		});
 		ref.push();
 	}
 }
